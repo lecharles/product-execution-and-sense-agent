@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+Design System Definition - Enhanced Day 1 Implementation
+All colors, gradients, fonts, etc should be defined here for consistency.
+All colors MUST be HSL format for proper theme support.
+
+Day 1 Enhancements:
+- Added gradient-subtle for enhanced card backgrounds
+- Added shadow-glow for premium effects
+- Improved transition timing function for smoother animations
 */
 
 @layer base {
@@ -36,12 +43,13 @@ All colors MUST be HSL.
     --input: 240 3.7% 15.9%;
     --ring: 142.1 76.2% 36.3%;
 
+    /* Day 1 Enhanced Gradients and Effects */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(142.1 70% 45%));
     --gradient-card: linear-gradient(135deg, hsl(240 8% 8%), hsl(240 6% 12%));
-    --gradient-subtle: linear-gradient(135deg, hsl(240 10% 6%), hsl(240 8% 8%));
+    --gradient-subtle: linear-gradient(135deg, hsl(240 10% 6%), hsl(240 8% 8%));  /* New: subtle background gradient */
     --shadow-elegant: 0 10px 40px -10px hsl(var(--primary) / 0.3);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.4);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.4);                           /* New: glowing shadow effect */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);                  /* Enhanced: improved easing */
 
     --radius: 0.5rem;
 

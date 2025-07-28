@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Product Sense & Execution Practice Agent
 
 ## Project info
 

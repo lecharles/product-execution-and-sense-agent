@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Settings } from 'lucide-react';
+import { Bot, User, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { QuestionDisplay } from './QuestionDisplay';
+import { ResponseInput } from './ResponseInput';
+import { TypingIndicator, MessageSkeleton } from './LoadingStates';
 
 interface Message {
   id: string;
@@ -235,37 +237,19 @@ Stay in character as an interviewer throughout.`
               )}
             </div>
           ))}
-          {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Bot className="h-4 w-4 text-primary" />
-              </div>
-              <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
-                <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                </div>
-              </div>
-            </div>
-          )}
+          {isLoading && <TypingIndicator />}
         </div>
       </ScrollArea>
 
       <div className="p-4 border-t border-primary/20">
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your answer..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        <ResponseInput
+          value={input}
+          onChange={setInput}
+          onSubmit={sendMessage}
+          disabled={isLoading}
+          placeholder="Type your detailed response here..."
+          maxLength={2000}
+        />
       </div>
     </div>
   );

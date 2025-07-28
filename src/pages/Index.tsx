@@ -3,7 +3,7 @@ import { InterviewChat } from '@/components/InterviewChat';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Brain, Target, BarChart3, Users, Github } from 'lucide-react';
+import { Brain, Target, BarChart3, Users, Github, Settings } from 'lucide-react';
 
 const Index = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -23,14 +23,24 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">AI-Powered Practice Platform</p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => window.open('https://github.com', '_blank')}
-              className="gap-2"
-            >
-              <Github className="h-4 w-4" />
-              GitHub
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setSettingsOpen(true)}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">API Key</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.open('https://github.com', '_blank')}
+                className="gap-2"
+              >
+                <Github className="h-4 w-4" />
+                <span className="hidden sm:inline">GitHub</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>

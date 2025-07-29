@@ -22,11 +22,12 @@
 - [x] Test component interactions
 
 ### Day 2: Basic State Management (Zustand)
-- [ ] Set up Zustand store for app state
-- [ ] Create interview session state management
-- [ ] Add settings state (API key, preferences)
-- [ ] Implement simple local storage persistence
-- [ ] Add loading and error states
+- [x] Set up Zustand store for app state
+- [x] Create interview session state management
+- [x] Add settings state (API key, preferences)
+- [x] Implement simple local storage persistence
+- [x] Add loading and error states
+- [x] Added error boundary component
 - [ ] Test state updates and persistence
 
 ### Day 3: Question Categories & Selection

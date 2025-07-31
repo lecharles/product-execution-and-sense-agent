@@ -1,94 +1,98 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Target, TrendingUp } from 'lucide-react';
-
 /**
- * Props interface for the QuestionDisplay component
- * Defines all the properties needed to display an interview question with metadata
+ * QuestionDisplay Component
+ * 
+ * Enhanced component for displaying interview questions with rich metadata
+ * including category badges, difficulty indicators, and contextual information.
  */
+
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Clock } from 'lucide-react';
+import { InterviewQuestion } from '@/types/interview';
+import { CATEGORY_INFO, DIFFICULTY_INFO } from '@/data/questionBank';
+
 interface QuestionDisplayProps {
-  question: string;           // The actual interview question text
-  category?: string;          // Question category (e.g., "Product Execution", "Product Sense")
-  difficulty?: 'Easy' | 'Medium' | 'Hard';  // Difficulty level with strict typing
-  timeLimit?: number;         // Suggested time limit in minutes
-  isVisible: boolean;         // Controls whether the component is rendered
+  /** The interview question object with all metadata */
+  question: InterviewQuestion;
 }
 
-/**
- * QuestionDisplay Component - Day 1 Implementation
- * 
- * A polished component for displaying interview questions with:
- * - Category and difficulty badges with appropriate styling
- * - Time limit indicator with clock icon
- * - Professional card layout with gradient background
- * - Proper typography and spacing for readability
- * 
- * This component replaces simple text display with a rich, informative presentation
- * that helps users understand the context and expectations of each question.
- */
-export const QuestionDisplay = ({ 
-  question, 
-  category = "Product Execution",     // Default category if none provided
-  difficulty = "Medium",              // Default difficulty level
-  timeLimit = 30,                     // Default time limit of 30 minutes
-  isVisible 
-}: QuestionDisplayProps) => {
-  // Early return if component should not be visible - prevents unnecessary rendering
-  if (!isVisible) return null;
-
-  /**
-   * Determines the appropriate badge color variant based on difficulty level
-   * Uses semantic color mapping for intuitive difficulty indication
-   */
-  const getDifficultyColor = (diff: string) => {
-    switch (diff) {
-      case 'Easy': return 'default';      // Green-ish default color for easy questions
-      case 'Medium': return 'secondary';  // Neutral color for medium questions  
-      case 'Hard': return 'destructive';  // Red-ish color for hard questions
-      default: return 'default';          // Fallback to default
-    }
-  };
-
-  /**
-   * Returns appropriate icon for each difficulty level
-   * Visual indicators help users quickly identify question complexity
-   */
-  const getDifficultyIcon = (diff: string) => {
-    switch (diff) {
-      case 'Easy': return <Target className="h-3 w-3" />;        // Target icon for easy (precise, achievable)
-      case 'Medium': return <TrendingUp className="h-3 w-3" />;  // Trending up for medium (growth challenge)
-      case 'Hard': return <TrendingUp className="h-3 w-3" />;    // Same icon but with destructive color
-      default: return <Target className="h-3 w-3" />;           // Fallback icon
-    }
-  };
-
+export const QuestionDisplay = ({ question }: QuestionDisplayProps) => {
   return (
     <Card className="p-6 mb-6 bg-gradient-subtle border-primary/30">
-      {/* Header section with category and difficulty badges */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          {/* Category badge - helps users understand question type */}
-          <Badge variant="outline" className="text-xs">
-            {category}
-          </Badge>
-          {/* Difficulty badge with dynamic color and icon */}
-          <Badge variant={getDifficultyColor(difficulty)} className="text-xs">
-            {getDifficultyIcon(difficulty)}
-            {difficulty}
-          </Badge>
+      <CardContent className="p-0">
+        {/* Category and Difficulty Badges */}
+        <div className="flex items-center gap-2 mb-4">
+          {question.category && (
+            <Badge 
+              variant="secondary" 
+              className="text-xs"
+              style={{ 
+                backgroundColor: CATEGORY_INFO[question.category]?.color + '20',
+                color: CATEGORY_INFO[question.category]?.color 
+              }}
+            >
+              {CATEGORY_INFO[question.category]?.icon} {CATEGORY_INFO[question.category]?.displayName || question.category}
+            </Badge>
+          )}
+          {question.difficulty && (
+            <Badge 
+              className="text-xs"
+              style={{ 
+                backgroundColor: DIFFICULTY_INFO[question.difficulty]?.color,
+                color: 'white'
+              }}
+            >
+              {DIFFICULTY_INFO[question.difficulty]?.displayName || question.difficulty}
+            </Badge>
+          )}
+          {question.estimatedTime && (
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {question.estimatedTime}m
+            </Badge>
+          )}
         </div>
-        {/* Time limit indicator - sets expectations for response time */}
-        <div className="flex items-center gap-1 text-muted-foreground text-sm">
-          <Clock className="h-4 w-4" />
-          <span>{timeLimit} min suggested</span>
-        </div>
-      </div>
-      
-      {/* Question content area with proper typography */}
-      <div className="prose prose-sm">
-        <p className="text-base leading-relaxed">{question}</p>
-      </div>
+
+        {/* Main Question */}
+        <h2 className="text-xl font-semibold text-foreground mb-6 leading-relaxed">
+          {question.question}
+        </h2>
+
+        {/* Context Section */}
+        {question.context && (
+          <div className="mb-6 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
+            <h3 className="font-medium text-sm text-muted-foreground mb-2">Context</h3>
+            <p className="text-sm">{question.context}</p>
+          </div>
+        )}
+
+        {/* Framework Section */}
+        {question.framework && question.framework.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-medium text-sm text-muted-foreground mb-3">Suggested Framework</h3>
+            <ul className="space-y-2">
+              {question.framework.map((point, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <span className="text-primary font-medium min-w-[20px]">{index + 1}.</span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Tags */}
+        {question.tags && question.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-4">
+            {question.tags.map(tag => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };

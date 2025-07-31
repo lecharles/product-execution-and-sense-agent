@@ -1,138 +1,178 @@
-import React, { useState } from 'react';
-import { InterviewChat } from '@/components/InterviewChat';
-import { SettingsDialog } from '@/components/SettingsDialog';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Brain, Target, BarChart3, Users, Github, Settings } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { QuestionDisplay } from "@/components/QuestionDisplay";
+import { ResponseInput } from "@/components/ResponseInput";
+import { QuestionSelector } from "@/components/QuestionSelector";
+import { SettingsDialog } from "@/components/SettingsDialog";
+import { useInterviewStore } from "@/stores/interviewStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { Settings, Play, Pause, RotateCcw, SkipForward, ArrowLeft } from "lucide-react";
 
 const Index = () => {
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { 
+    currentSession, 
+    isLoading, 
+    pauseSession, 
+    resumeSession, 
+    nextQuestion, 
+    previousQuestion,
+    addResponse,
+    completeSession 
+  } = useInterviewStore();
+  
+  const { } = useSettingsStore();
+  
+  // State for showing question selector
+  const [showQuestionSelector, setShowQuestionSelector] = useState(!currentSession);
+  const [response, setResponse] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Update showQuestionSelector based on session state
+  useEffect(() => {
+    setShowQuestionSelector(!currentSession);
+  }, [currentSession]);
+
+  const handleSessionCreated = () => {
+    setShowQuestionSelector(false);
+  };
+  
+  const handleBackToSelector = () => {
+    if (currentSession) {
+      completeSession();
+    }
+    setShowQuestionSelector(true);
+  };
+
+  const handleSubmitResponse = () => {
+    if (response.trim() && currentSession) {
+      addResponse({
+        questionId: currentSession.questions[currentSession.currentQuestionIndex].id,
+        content: response.trim(),
+        duration: 0
+      });
+      setResponse("");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-primary/20 bg-gradient-card">
+      <header className="border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Brain className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">PM Interview Coach</h1>
-                <p className="text-sm text-muted-foreground">AI-Powered Practice Platform</p>
-              </div>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-primary">PM Interview Practice</h1>
+              <span className="text-sm text-muted-foreground">
+                Master your Product Manager interviews
+              </span>
             </div>
-            <div className="flex gap-2">
+            
+            <div className="flex items-center space-x-2">
+              {currentSession && !showQuestionSelector && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBackToSelector}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  New Session
+                </Button>
+              )}
               <Button
                 variant="outline"
-                onClick={() => setSettingsOpen(true)}
-                className="gap-2"
+                size="icon"
+                onClick={() => setIsSettingsOpen(true)}
               >
                 <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">API Key</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => window.open('https://github.com', '_blank')}
-                className="gap-2"
-              >
-                <Github className="h-4 w-4" />
-                <span className="hidden sm:inline">GitHub</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Chat Interface */}
-          <div className="lg:col-span-2">
-            <InterviewChat onOpenSettings={() => setSettingsOpen(true)} />
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {showQuestionSelector ? (
+          // Question Selector Interface
+          <div className="max-w-6xl mx-auto">
+            <QuestionSelector onSessionCreated={handleSessionCreated} />
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Features */}
-            <Card className="p-6 bg-gradient-card border-primary/20">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Features
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-primary rounded-full mt-2" />
-                  <div>
-                    <p className="font-medium text-sm">Product Execution</p>
-                    <p className="text-xs text-muted-foreground">Practice design and improvement questions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-primary rounded-full mt-2" />
-                  <div>
-                    <p className="font-medium text-sm">Product Sense</p>
-                    <p className="text-xs text-muted-foreground">Develop intuition for product decisions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-primary rounded-full mt-2" />
-                  <div>
-                    <p className="font-medium text-sm">Real-time Feedback</p>
-                    <p className="text-xs text-muted-foreground">Get instant evaluation and tips</p>
-                  </div>
+        ) : currentSession ? (
+          // Active session - show interview interface
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Session Controls */}
+            <div className="flex items-center justify-between bg-card border rounded-lg px-4 py-3">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">
+                  Question {currentSession.currentQuestionIndex + 1} of {currentSession.questions.length}
+                </span>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={previousQuestion}
+                    disabled={currentSession.currentQuestionIndex === 0}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline" 
+                    size="sm"
+                    onClick={nextQuestion}
+                    disabled={currentSession.currentQuestionIndex === currentSession.questions.length - 1}
+                  >
+                    <SkipForward className="h-4 w-4 mr-1" />
+                    Next
+                  </Button>
                 </div>
               </div>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="p-6 bg-gradient-card border-primary/20">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                Interview Tips
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <p className="font-medium mb-1">Structure Your Answers</p>
-                  <p className="text-muted-foreground text-xs">Use frameworks like CIRCLES or RICE</p>
-                </div>
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <p className="font-medium mb-1">Ask Clarifying Questions</p>
-                  <p className="text-muted-foreground text-xs">Understand the problem deeply first</p>
-                </div>
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <p className="font-medium mb-1">Think About Metrics</p>
-                  <p className="text-muted-foreground text-xs">Always consider how to measure success</p>
-                </div>
+              
+              <div className="flex space-x-2">
+                {currentSession.status === 'in-progress' ? (
+                  <Button variant="outline" size="sm" onClick={pauseSession}>
+                    <Pause className="h-4 w-4 mr-1" />
+                    Pause
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={resumeSession}>
+                    <Play className="h-4 w-4 mr-1" />
+                    Resume
+                  </Button>
+                )}
+                
+                <Button variant="outline" size="sm" onClick={() => setResponse("")}>
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Clear
+                </Button>
               </div>
-            </Card>
+            </div>
 
-            {/* About */}
-            <Card className="p-6 bg-gradient-card border-primary/20">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                About
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Practice PM interviews with our AI coach. Get personalized feedback 
-                and improve your product thinking skills for top tech companies.
-              </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => setSettingsOpen(true)}
-              >
-                Configure API Key
-              </Button>
-            </Card>
+            {/* Question Display */}
+            <QuestionDisplay 
+              question={currentSession.questions[currentSession.currentQuestionIndex]}
+            />
+
+            {/* Response Input */}
+            <ResponseInput
+              value={response}
+              onChange={setResponse}
+              onSubmit={handleSubmitResponse}
+              disabled={currentSession.status === 'paused'}
+              placeholder="Share your thoughts and approach to this question..."
+            />
           </div>
-        </div>
-      </div>
+        ) : (
+          // Fallback loading state
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        )}
+      </main>
 
+      {/* Settings Dialog */}
       <SettingsDialog 
-        open={settingsOpen} 
-        onOpenChange={setSettingsOpen} 
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
       />
     </div>
   );

@@ -27,13 +27,7 @@ import { persist } from 'zustand/middleware';
  */
 
 // Represents a single interview question with metadata
-export interface InterviewQuestion {
-  id: string; // Unique identifier for the question
-  content: string; // The actual question text displayed to user
-  category: 'product-sense' | 'analytical' | 'technical' | 'behavioral' | 'strategy'; // Question categorization
-  difficulty: 'easy' | 'medium' | 'hard'; // Difficulty level for appropriate challenge
-  timeLimit?: number; // Optional time limit in minutes for timed practice
-}
+// InterviewQuestion interface now imported from centralized types
 
 // Represents a user's response to an interview question
 export interface InterviewResponse {

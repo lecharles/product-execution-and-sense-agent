@@ -20,6 +20,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { InterviewQuestion } from '../types/interview';
 
 /**
  * Core Interview Data Types

@@ -4,9 +4,14 @@ import { QuestionDisplay } from "@/components/QuestionDisplay";
 import { ResponseInput } from "@/components/ResponseInput";
 import { QuestionSelector } from "@/components/QuestionSelector";
 import { SettingsDialog } from "@/components/SettingsDialog";
-import { useInterviewStore } from "@/stores/interviewStore";
+import { InterviewSession } from "@/components/InterviewSession";
+import { SessionHistory } from "@/components/SessionHistory";
+import { SessionTimer } from "@/components/SessionTimer";
+import { SessionProgress } from "@/components/SessionProgress";
+import { useInterviewStore, InterviewSession as SessionType } from "@/stores/interviewStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { Settings, Play, Pause, RotateCcw, SkipForward, ArrowLeft } from "lucide-react";
+import { Settings, Play, Pause, RotateCcw, SkipForward, ArrowLeft, History } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const { 
@@ -22,25 +27,33 @@ const Index = () => {
   
   const { } = useSettingsStore();
   
-  // State for showing question selector
-  const [showQuestionSelector, setShowQuestionSelector] = useState(!currentSession);
+  // State for UI management
+  const [activeTab, setActiveTab] = useState(currentSession ? 'session' : 'setup');
   const [response, setResponse] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Update showQuestionSelector based on session state
+  // Update active tab based on session state
   useEffect(() => {
-    setShowQuestionSelector(!currentSession);
-  }, [currentSession]);
+    if (currentSession && activeTab === 'setup') {
+      setActiveTab('session');
+    }
+  }, [currentSession, activeTab]);
 
   const handleSessionCreated = () => {
-    setShowQuestionSelector(false);
+    setActiveTab('session');
   };
-  
-  const handleBackToSelector = () => {
-    if (currentSession) {
-      completeSession();
-    }
-    setShowQuestionSelector(true);
+
+  const handleSessionComplete = () => {
+    setActiveTab('history');
+  };
+
+  const handleSessionExit = () => {
+    setActiveTab('setup');
+  };
+
+  const handleSessionResume = (session: SessionType) => {
+    // Resume session logic would be handled by the store
+    setActiveTab('session');
   };
 
   const handleSubmitResponse = () => {
@@ -68,16 +81,14 @@ const Index = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              {currentSession && !showQuestionSelector && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBackToSelector}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  New Session
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('history')}
+              >
+                <History className="h-4 w-4 mr-1" />
+                History
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
@@ -92,81 +103,48 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {showQuestionSelector ? (
-          // Question Selector Interface
-          <div className="max-w-6xl mx-auto">
-            <QuestionSelector onSessionCreated={handleSessionCreated} />
-          </div>
-        ) : currentSession ? (
-          // Active session - show interview interface
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Session Controls */}
-            <div className="flex items-center justify-between bg-card border rounded-lg px-4 py-3">
-              <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium">
-                  Question {currentSession.currentQuestionIndex + 1} of {currentSession.questions.length}
-                </span>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={previousQuestion}
-                    disabled={currentSession.currentQuestionIndex === 0}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline" 
-                    size="sm"
-                    onClick={nextQuestion}
-                    disabled={currentSession.currentQuestionIndex === currentSession.questions.length - 1}
-                  >
-                    <SkipForward className="h-4 w-4 mr-1" />
-                    Next
-                  </Button>
+        <div className="max-w-6xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="setup">Question Setup</TabsTrigger>
+              <TabsTrigger value="session" disabled={!currentSession}>
+                Active Session
+              </TabsTrigger>
+              <TabsTrigger value="history">Session History</TabsTrigger>
+            </TabsList>
+
+            {/* Question Setup Tab */}
+            <TabsContent value="setup" className="space-y-6">
+              <div className="max-w-6xl mx-auto">
+                <QuestionSelector onSessionCreated={handleSessionCreated} />
+              </div>
+            </TabsContent>
+
+            {/* Active Session Tab */}
+            <TabsContent value="session" className="space-y-6">
+              <InterviewSession 
+                onComplete={handleSessionComplete}
+                onExit={handleSessionExit}
+              />
+            </TabsContent>
+
+            {/* Session History Tab */}
+            <TabsContent value="history" className="space-y-6">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold mb-2">Interview History</h2>
+                  <p className="text-muted-foreground">
+                    Review your past sessions and track your progress
+                  </p>
                 </div>
+                <SessionHistory 
+                  onSessionResume={handleSessionResume}
+                  showActions={true}
+                />
               </div>
-              
-              <div className="flex space-x-2">
-                {currentSession.status === 'in-progress' ? (
-                  <Button variant="outline" size="sm" onClick={pauseSession}>
-                    <Pause className="h-4 w-4 mr-1" />
-                    Pause
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" onClick={resumeSession}>
-                    <Play className="h-4 w-4 mr-1" />
-                    Resume
-                  </Button>
-                )}
-                
-                <Button variant="outline" size="sm" onClick={() => setResponse("")}>
-                  <RotateCcw className="h-4 w-4 mr-1" />
-                  Clear
-                </Button>
-              </div>
-            </div>
-
-            {/* Question Display */}
-            <QuestionDisplay 
-              question={currentSession.questions[currentSession.currentQuestionIndex]}
-            />
-
-            {/* Response Input */}
-            <ResponseInput
-              value={response}
-              onChange={setResponse}
-              onSubmit={handleSubmitResponse}
-              disabled={currentSession.status === 'paused'}
-              placeholder="Share your thoughts and approach to this question..."
-            />
-          </div>
-        ) : (
-          // Fallback loading state
-          <div className="max-w-2xl mx-auto text-center">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
 
       {/* Settings Dialog */}
